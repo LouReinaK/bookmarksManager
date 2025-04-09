@@ -1,0 +1,65 @@
+:root {
+    --bg-color: rgb(0, 0, 0, 0.3);
+    --gold-color: rgb(244, 227, 173, 1);
+}
+
+body {
+    height: 100dvh;
+    width: 100dvw;
+    margin: 0;
+    border:0;
+    overflow: hidden;
+    background-color: black;
+    /* background-image: url(assets/black_skull-wallpaper-1920x1080.jpg);
+    background-size: cover;
+    background-repeat: no-repeat; */
+    color: white;
+}
+
+h1 {
+    text-align: center;
+}
+
+.cardsContainer > a {
+    all: unset;
+    width: fit-content;
+    height: fit-content;
+    margin: 10px;
+}
+
+button {
+    all: unset;
+    display:grid;
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 20%;
+    background-color: rgb(255,255,255,0.1);
+    box-shadow: 0 0  5px rgb(0,255,255);
+    align-content: center;
+    text-align :center;
+    cursor: pointer;
+    text-wrap: break-word;
+    transition-duration: 0.2s;
+}
+
+button:hover {
+    box-shadow: 0 0 15px rgb(0,255,255,1);
+}
+
+button:hover > .cardTitle {
+    font-size: 1.2em;
+}
+
+.cardTitle {
+    font-size: 1em;
+    overflow-wrap: break-word;
+    width: 90px;
+    margin: auto;
+    transition-duration: 0.2s;
+}
+
+.cardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+}
