@@ -1,16 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page d'accueil</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Création manuelle de l'instance
+        const client = new cozy.Client({
+            uri: 'https://<ton-instance>.mycozy.cloud',
+            oauth: {
+                clientID: 'myapp',
+                redirectURI: window.location.href
+            },
+            scope: ['io.cozy.files']
+        });
+
+        // Authentification (OAuth ou via token pré-configuré)
+        async function initCozy() {
+            try {
+                await client.handleRedirectCallback(); // si retour OAuth
+            } catch (_) { }
+
+            if (!client.isLogged) {
+                client.startOAuthFlow(); // redirige pour authentification
+                return;
+            }
+
+            // Test : récupération d'un fichier
+            const file = await client.files.statByPath('/Documents/mon-fichier.json');
+            console.log(file);
+        }
+
+        initCozy();
+    </script>
     <script src="index.js"></script>
 </head>
+
 <body></body>
-    <h1>Bonjour Lou</h1>
-    <div class="cardsContainer">
-        <a href="https://moodle.insa-lyon.fr/course/index.php?categoryid=119"><button><span class="cardTitle">Moodle</span></button></a>
-    </div>
+<h1 id="pageTitle">Bonjour</h1>
+<div id="bookmarksContainer" class="cardsContainer">
+    <a href="https://moodle.insa-lyon.fr/course/index.php?categoryid=119"><button><span
+                class="cardTitle">Moodle</span></button></a>
+</div>
 </body>
+
 </html>
