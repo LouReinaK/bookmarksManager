@@ -1,11 +1,10 @@
 const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
-const REDIRECT_URI = 'http://localhost:3000/';  // Remplace par l'URL de redirection configurée
+const REDIRECT_URI = window.location.href;
+const DEBUG = false; // Set to true while debugging
 let dbx;
 let accessToken;
 let jsonData; // sert de buffer pour le fichier json
-let debug = false; // Set to true while debugging
-
 let commandsHideState = true;
 
 // Fonction pour authentifier l'utilisateur via OAuth
@@ -37,7 +36,7 @@ function readJsonFile() {
       response.result.fileBlob.text().then(function (fileContents) {
         try {
           jsonData = JSON.parse(fileContents);
-          if(debug) {
+          if(DEBUG) {
             console.log("file read :", jsonData);
           }
         } catch (err) {
@@ -61,7 +60,7 @@ function readJsonFile() {
 
 // Envoyer le fichier JSON à Dropbox
 function writeJsonFile() {
-  if(debug) {
+  if(DEBUG) {
     console.log("file to write :", jsonData);
   }
   fileContent = JSON.stringify(jsonData, null, 2);
@@ -71,7 +70,7 @@ function writeJsonFile() {
     mode: { '.tag': 'overwrite' }
   })
     .then(function (response) {
-      if(debug) {
+      if(DEBUG) {
         console.log('File successfully updated !');
       }
     })
@@ -123,7 +122,7 @@ function addBookmark() {
       "url": url
     }
     jsonData.push(newObject);
-    if(debug) {
+    if(DEBUG) {
       console.log("file modified in buffer :", jsonData);
     }
     hideBookmarkForm();
@@ -138,7 +137,7 @@ function removeBookmark(id) {
   for (let index in jsonData) {
     if (jsonData[index].id == id) {
       jsonData.splice(index, 1);
-      if(debug) {
+      if(DEBUG) {
         console.log("Element removed from buffer :", jsonData);
       }
       updateDisplay();
@@ -146,7 +145,7 @@ function removeBookmark(id) {
       return 1;
     }
   }
-  if(debug) {
+  if(DEBUG) {
     console.log("Element absent du fichier JSON");
   }
   return 0;
@@ -163,7 +162,7 @@ function modifyBookmark() {
       element.url = url;
     }
   });
-  if(debug) {
+  if(DEBUG) {
     console.log("Element modified in buffer :", jsonData);
   }
   hideBookmarkForm();
