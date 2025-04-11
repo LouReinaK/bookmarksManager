@@ -1,16 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page d'accueil</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="index.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
+    <script type="text/javascript" src="index.js"></script>
 </head>
-<body></body>
-    <h1>Bonjour Lou</h1>
-    <div class="cardsContainer">
-        <a href="https://moodle.insa-lyon.fr/course/index.php?categoryid=119"><button><span class="cardTitle">Moodle</span></button></a>
+
+<body>
+    <h1 id="pageTitle">Bonjour</h1>
+    <button id="editBookmarksBtn">Edit</button>
+    <div id="bookmarksContainer" class="cardsContainer">
+        <div class="cardWrapper">
+            <button class="card" id="addNewBookmarkButton">
+                <span class="cardTitle">+</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="bookmarkForm" style="display:none" data-target-bookmark="">
+        <button id="closeBookmarkFormBtn">x</button>
+        <div class="newBookmarkContent">
+            <input id="nameInput" type="text" placeholder="Name">
+            <input id="urlInput" type="text" placeholder="http://example.com">
+            <button id="submitBookmarkForm">Create</button>
+        </div>
     </div>
 </body>
+
 </html>

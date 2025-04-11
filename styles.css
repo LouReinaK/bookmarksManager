@@ -20,14 +20,30 @@ h1 {
     text-align: center;
 }
 
-.cardsContainer > a {
-    all: unset;
-    width: fit-content;
-    height: fit-content;
+#editBookmarksBtn {
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 10%;
+    background-color: rgb(255,255,255,0.1);
+    box-shadow: 0 0 5px rgb(255,255,0);
+    color: white;
+    margin: 0 0 5px 25px;
+    transition-duration: 0.2s;
+}
+
+#editBookmarksBtn:hover {
+    box-shadow: 0 0 15px rgb(255,255,0);
+}
+
+.cardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cardWrapper {
     margin: 10px;
 }
 
-button {
+.card {
     all: unset;
     display:grid;
     width: 100px;
@@ -43,11 +59,11 @@ button {
     transition-duration: 0.2s;
 }
 
-button:hover {
+.card:hover {
     box-shadow: 0 0 15px rgb(0,255,255,1);
 }
 
-button:hover > .cardTitle {
+.card:hover > .cardTitle {
     font-size: 1.2em;
 }
 
@@ -59,7 +75,81 @@ button:hover > .cardTitle {
     transition-duration: 0.2s;
 }
 
-.cardsContainer {
+.bookmarkActionsContainer > button {
+    width:20px;
+    height: 20px;
+    margin: 10px auto;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.bookmarkActionsContainer {
     display: flex;
-    flex-wrap: wrap;
+    width: 102px; /* button width + border width */
+}
+
+#bookmarkForm {
+    position: absolute;
+    top:calc(50% - 100px);
+    left:calc(50% - 100px);
+    width: 200px;
+    height: 200px;
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 20%;
+    background-color: rgb(0,0,0,1);
+    box-shadow: 0 0  5px rgb(0,255,255);
+    display:flex;
+    align-items: center;
+    text-align: center;
+}
+
+#closeBookmarkFormBtn {
+    position: absolute;
+    top: -0.25em;
+    right: -0.25em;
+    font-size:1em;
+    width:2em;
+    height: 2em;
+    border: none;
+    border-radius: 50%;
+    background-color: rgb(0,150,150);
+    transition-duration: 0.1s;
+    cursor: pointer;
+}
+
+#closeBookmarkFormBtn:hover {
+    box-shadow: 0 0 5px rgb(0,255,255);
+    border: solid 1px rgb(255,255,255,0.5);
+}
+
+.newBookmarkContent > input {
+    width: 150px;
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 10%;
+    background-color: rgb(255,255,255,0.1);
+    box-shadow: 0 0  5px rgb(0,255,255);
+    margin-bottom: 10px;
+    padding: 2px;
+    color: white;
+    transition-duration: 0.2s;
+}
+
+.newBookmarkContent > input:focus {
+    outline:none;
+    box-shadow: 0 0 10px rgb(0,255,255);
+}
+
+.newBookmarkContent > button {
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 10%;
+    background-color: rgb(255,255,255,0.1);
+    box-shadow: 0 0 5px rgb(0,255,255);
+    color: white;
+    transition-duration: 0.2s;
+}
+
+.newBookmarkContent > button:hover {
+    box-shadow: 0 0 15px rgb(0,255,255);
 }
