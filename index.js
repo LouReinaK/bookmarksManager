@@ -1,5 +1,4 @@
-//const APP_KEY = '032pg35p3awd4o'; // Remplace par ta clé d'application
-const APP_KEY = 'vaaiuvn1efb8lc3'; // Remplace par ta clé d'application
+const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
