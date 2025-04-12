@@ -1,4 +1,5 @@
-const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
+//const APP_KEY = '032pg35p3awd4o'; // Remplace par ta clé d'application
+const APP_KEY = 'vaaiuvn1efb8lc3'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
@@ -23,8 +24,10 @@ function checkAuthentication() {
   // then check the away storage anyway
   const urlParams = new URLSearchParams(window.location.hash.substring(1)); // Après le # dans l'URL
   accessToken = urlParams.get('access_token');
+  if (!accessToken) accessToken = localStorage.getItem("accessToken"); // s'il n'y a pas d'access token dans l'url, regarde dans le stockage local
 
   if (accessToken) {
+    localStorage.setItem("accessToken", accessToken); // enregistre l'access token dans le stockage local pour d'autres occurrences de la page : permet de réduire le nombre d'appels à l'oauth de dropbox qui est limité
     dbx = new Dropbox.Dropbox({ accessToken: accessToken });
     readJsonFile();
   }
