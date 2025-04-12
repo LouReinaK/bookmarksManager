@@ -2,7 +2,7 @@ const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
-const DEBUG = true; // Set to true while debugging
+const DEBUG = false; // Set to true while debugging
 let dbx;
 let accessToken;
 let jsonData; // sert de buffer pour le fichier json
@@ -13,17 +13,19 @@ function authenticate() {
   // Créer l'URL d'authentification OAuth pour Dropbox
   const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${APP_KEY}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
   window.location.href = authUrl;  // Redirige l'utilisateur vers l'URL d'authentification
-  
 }
 
 // Vérifier l'URL de redirection après l'authentification pour récupérer le token d'accès
 function checkAuthentication() {
+  // if there is anything in the local storage show it
+  readFromLocalStorage();
+
+  // then check the away storage anyway
   const urlParams = new URLSearchParams(window.location.hash.substring(1)); // Après le # dans l'URL
   accessToken = urlParams.get('access_token');
 
   if (accessToken) {
     dbx = new Dropbox.Dropbox({ accessToken: accessToken });
-    readFromLocalStorage();
     readJsonFile();
   }
   else {
