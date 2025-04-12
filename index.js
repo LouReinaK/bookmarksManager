@@ -2,7 +2,7 @@ const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
-const DEBUG = false; // Set to true while debugging
+const DEBUG = true; // Set to true while debugging
 let dbx;
 let accessToken;
 let jsonData; // sert de buffer pour le fichier json
@@ -23,12 +23,34 @@ function checkAuthentication() {
 
   if (accessToken) {
     dbx = new Dropbox.Dropbox({ accessToken: accessToken });
+    readFromLocalStorage();
     readJsonFile();
   }
   else {
     authenticate();
   }
 };
+
+function writeInLocalStorage() {
+  localStorage.setItem("jsonData", JSON.stringify(jsonData, null, 2));
+}
+
+function readFromLocalStorage() {
+  try {
+    jsonData = JSON.parse(localStorage.getItem("jsonData"));
+    if(jsonData === null) return;
+    if(DEBUG) {
+      console.log("file read from local storage :", jsonData);
+    }
+  } catch (err) {
+    console.error("Erreur de parsing JSON :", err.message);
+  }
+  // traitement
+  let username = "";
+  jsonData.forEach((element) => {if(element.id == -1) username = element.name;});
+  document.getElementById("pageTitle").textContent = "Bonjour " + username;
+  updateDisplay();
+}
 
 // Lire le fichier JSON depuis Dropbox
 function readJsonFile() {
@@ -48,6 +70,7 @@ function readJsonFile() {
         jsonData.forEach((element) => {if(element.id == -1) username = element.name;});
         document.getElementById("pageTitle").textContent = "Bonjour " + username;
         updateDisplay();
+        writeInLocalStorage();
       });
     })
     .catch(function (error) {
@@ -139,6 +162,7 @@ function addBookmark() {
     hideBookmarkForm();
     hideCommands(); // au cas où les commandes étaient toujours affichées
     updateDisplay();
+    writeInLocalStorage();
     writeJsonFile();
   }
 }
@@ -152,6 +176,7 @@ function removeBookmark(id) {
         console.log("Element removed from buffer :", jsonData);
       }
       updateDisplay();
+      writeInLocalStorage();
       writeJsonFile();
       return 1;
     }
@@ -178,6 +203,7 @@ function modifyBookmark() {
   }
   hideBookmarkForm();
   updateDisplay();
+  writeInLocalStorage();
   writeJsonFile();
 }
 
