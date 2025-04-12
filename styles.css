@@ -3,17 +3,22 @@
     --gold-color: rgb(244, 227, 173, 1);
 }
 
+
 body {
-    height: 100dvh;
-    width: 100dvw;
-    margin: 0;
+    height: 95dvh;
+    width: 99dvw;
+    margin: 0 auto;
+    padding : 0;
     border:0;
-    overflow: hidden;
     background-color: black;
     /* background-image: url(assets/black_skull-wallpaper-1920x1080.jpg);
     background-size: cover;
     background-repeat: no-repeat; */
     color: white;
+}
+
+body::-webkit-scrollbar {
+    display: none;
 }
 
 h1 {
