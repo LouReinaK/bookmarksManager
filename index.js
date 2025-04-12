@@ -1,6 +1,7 @@
 const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
 let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
-const REDIRECT_URI = window.location.href;
+const url = new URL(window.location.href);
+const REDIRECT_URI = url.origin + url.pathname;
 const DEBUG = false; // Set to true while debugging
 let dbx;
 let accessToken;
@@ -12,7 +13,7 @@ function authenticate() {
   // Créer l'URL d'authentification OAuth pour Dropbox
   const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${APP_KEY}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
   window.location.href = authUrl;  // Redirige l'utilisateur vers l'URL d'authentification
-  checkAuthentication();
+  
 }
 
 // Vérifier l'URL de redirection après l'authentification pour récupérer le token d'accès
@@ -50,7 +51,11 @@ function readJsonFile() {
       });
     })
     .catch(function (error) {
-      if (error.status === 409) {
+      if (error.status === 401) {
+        console.warn("La clé d'accès a expiré");
+        authenticate();
+      }
+      else if (error.status === 409) {
         console.error('Le fichier n\'existe pas sur Dropbox.');
       } else {
         console.error('Erreur lors de la lecture du fichier :', error);
@@ -75,7 +80,13 @@ function writeJsonFile() {
       }
     })
     .catch(function (error) {
-      console.error('Erreur lors de la mise à jour du fichier :', error);
+      if (error.status === 401) {
+        console.warn("La clé d'accès a expiré");
+        authenticate();
+      }
+      else {
+        console.error('Erreur lors de la mise à jour du fichier :', error);
+      }
     });
 }
 
