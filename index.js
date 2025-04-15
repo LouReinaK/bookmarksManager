@@ -169,7 +169,6 @@ function hideBookmarkForm() {
 
 // on submitting the form, add the bookmark to the buffer then update the display and the JSON file
 function addBookmark() {
-  {
     // ajoute la version actuelle de jsonData à l'historique avant de la modifier
     writeInHistory();
     try {
