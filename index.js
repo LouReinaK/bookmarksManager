@@ -1,8 +1,8 @@
 const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
-let FILE_PATH = "/bookmarksForDev.json"; // Remplace par le chemin vers ton fichier json
+let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
-const DEBUG = true; // Set to true while debugging
+const DEBUG = false; // Set to true while debugging
 let dbx;
 let accessToken;
 let jsonData; // sert de buffer pour le fichier json
