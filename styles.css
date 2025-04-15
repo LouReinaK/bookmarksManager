@@ -39,6 +39,20 @@ h1 {
     box-shadow: 0 0 15px rgb(255,255,0);
 }
 
+#cancelChangesBtn {
+    border: 1px solid rgb(255, 255, 255, 0.5);
+    border-radius: 10%;
+    background-color: rgb(255,255,255,0.1);
+    box-shadow: 0 0 5px rgb(255,0,100,1);
+    color: white;
+    margin: 0 0 5px 25px;
+    transition-duration: 0.2s;
+}
+
+#cancelChangesBtn:hover {
+    box-shadow: 0 0 15px rgb(255,0,100,1);
+}
+
 .cardsContainer {
     display: flex;
     flex-wrap: wrap;

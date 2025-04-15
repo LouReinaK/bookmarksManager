@@ -1,11 +1,12 @@
 const APP_KEY = '032pg35p3awd4o9'; // Remplace par ta clé d'application
-let FILE_PATH = "/bookmarks.json"; // Remplace par le chemin vers ton fichier json
+let FILE_PATH = "/bookmarksForDev.json"; // Remplace par le chemin vers ton fichier json
 const url = new URL(window.location.href);
 const REDIRECT_URI = url.origin + url.pathname;
-const DEBUG = false; // Set to true while debugging
+const DEBUG = true; // Set to true while debugging
 let dbx;
 let accessToken;
 let jsonData; // sert de buffer pour le fichier json
+let versionHist; // stocke 5 versions précédentes de jsonData dans le session storage
 let commandsHideState = true;
 
 // Fonction pour authentifier l'utilisateur via OAuth
@@ -26,52 +27,69 @@ function checkAuthentication() {
   if (!accessToken) accessToken = localStorage.getItem("accessToken"); // s'il n'y a pas d'access token dans l'url, regarde dans le stockage local
 
   if (accessToken) {
+    try {
     localStorage.setItem("accessToken", accessToken); // enregistre l'access token dans le stockage local pour d'autres occurrences de la page : permet de réduire le nombre d'appels à l'oauth de dropbox qui est limité
     dbx = new Dropbox.Dropbox({ accessToken: accessToken });
     readJsonFile();
+    } catch(e) {
+      console.error("Failed to access the Dropbow serveur");
+      alert("Echec de la synchronisation avec le serveur");
+    }
   }
   else {
     authenticate();
   }
 };
 
+// écrit les données de jsonData dans le localStorage
 function writeInLocalStorage() {
   localStorage.setItem("jsonData", JSON.stringify(jsonData, null, 2));
+}
+
+// ajoute les données de jsonData dans l'historique stocké dans le session storage
+function writeInHistory() {
+  if (DEBUG) console.log("json file saved in session history : ", jsonData);
+  versionHist.push(structuredClone(jsonData));
+  sessionStorage.setItem("versionHist", versionHist);
 }
 
 function readFromLocalStorage() {
   try {
     jsonData = JSON.parse(localStorage.getItem("jsonData"));
-    if(jsonData === null) return;
-    if(DEBUG) {
-      console.log("file read from local storage :", jsonData);
+    if (jsonData === null) return;
+    if (DEBUG) {
+      console.log("json file read from local storage :", jsonData);
     }
   } catch (err) {
-    console.error("Erreur de parsing JSON :", err.message);
+    console.error("error parsing json file read from local storage :", err.message);
+    alert("Echec de la synchronisation avec le serveur");
   }
   // traitement
   let username = "";
-  jsonData.forEach((element) => {if(element.id == -1) username = element.name;});
+  jsonData.forEach((element) => { if (element.id == -1) username = element.name; });
   document.getElementById("pageTitle").textContent = "Bonjour " + username;
   updateDisplay();
 }
 
 // Lire le fichier JSON depuis Dropbox
+// extrait le nom de l'utilisateur
+// update l'affichage
+// enregistre le fichier JSON dans localStorage
 function readJsonFile() {
   dbx.filesDownload({ path: FILE_PATH })
     .then(function (response) {
       response.result.fileBlob.text().then(function (fileContents) {
         try {
           jsonData = JSON.parse(fileContents);
-          if(DEBUG) {
-            console.log("file read :", jsonData);
+          if (DEBUG) {
+            console.log("json file read from Dropbox :", jsonData);
           }
         } catch (err) {
-          console.error("Erreur de parsing JSON :", err.message);
+          console.error("error parsing json file read from Dropbox :", err.message);
         }
         // traitement
         let username = "";
-        jsonData.forEach((element) => {if(element.id == -1) username = element.name;});
+        jsonData.forEach((element) => { if (element.id == -1) username = element.name; });
         document.getElementById("pageTitle").textContent = "Bonjour " + username;
         updateDisplay();
         writeInLocalStorage();
@@ -79,21 +97,21 @@ function readJsonFile() {
     })
     .catch(function (error) {
       if (error.status === 401) {
-        console.warn("La clé d'accès a expiré");
+        console.warn("the Dropbox access token has expired");
         authenticate();
       }
       else if (error.status === 409) {
-        console.error('Le fichier n\'existe pas sur Dropbox.');
+        console.error("the file does not exist on Dropbox");
       } else {
-        console.error('Erreur lors de la lecture du fichier :', error);
+        console.error('error reading json file from Dropbox :', error);
       }
     });
 }
 
 // Envoyer le fichier JSON à Dropbox
 function writeJsonFile() {
-  if(DEBUG) {
-    console.log("file to write :", jsonData);
+  if (DEBUG) {
+    console.log("json file to write to Dropbox :", jsonData);
   }
   fileContent = JSON.stringify(jsonData, null, 2);
   dbx.filesUpload({
@@ -102,17 +120,19 @@ function writeJsonFile() {
     mode: { '.tag': 'overwrite' }
   })
     .then(function (response) {
-      if(DEBUG) {
-        console.log('File successfully updated !');
+      if (DEBUG) {
+        console.log('json file successfully updated on Dropbox !');
       }
     })
     .catch(function (error) {
       if (error.status === 401) {
-        console.warn("La clé d'accès a expiré");
+        console.warn("the Dropbox access token has expired");
         authenticate();
       }
       else {
-        console.error('Erreur lors de la mise à jour du fichier :', error);
+        console.error('error writing json file to Dropbox :', error);
+        if (error.status === 429); // too many requests, se mettra à jour plus tard
+        else alert("Echec de la synchronisation avec le serveur");
       }
     });
 }
@@ -121,8 +141,8 @@ function showNewBookmarkForm() {
   document.getElementById("bookmarkForm").style.display = "flex";
   document.getElementById("submitBookmarkForm").textContent = "Créer";
   document.getElementById("submitBookmarkForm").addEventListener("click", addBookmark);
-  document.addEventListener("keydown",handleEnterIsCreate);
-  document.addEventListener("keydown",handleEscape);
+  document.addEventListener("keydown", handleEnterIsCreate);
+  document.addEventListener("keydown", handleEscape);
 }
 
 function showModificationForm(elem) {
@@ -132,8 +152,8 @@ function showModificationForm(elem) {
   document.getElementById("submitBookmarkForm").textContent = "Modifier";
   document.getElementById("bookmarkForm").dataset.targetBookmark = elem.dataset.bookmarkId;;
   document.getElementById("submitBookmarkForm").addEventListener("click", modifyBookmark);
-  document.addEventListener("keydown",handleEnterIsModify);
-  document.addEventListener("keydown",handleEscape);
+  document.addEventListener("keydown", handleEnterIsModify);
+  document.addEventListener("keydown", handleEscape);
 }
 
 function hideBookmarkForm() {
@@ -142,51 +162,67 @@ function hideBookmarkForm() {
   document.getElementById("bookmarkForm").style.display = "none";
   document.getElementById("submitBookmarkForm").removeEventListener("click", addBookmark);
   document.getElementById("submitBookmarkForm").removeEventListener("click", modifyBookmark);
-  document.removeEventListener("keydown",handleEnterIsCreate);
-  document.removeEventListener("keydown",handleEnterIsModify);
-  document.removeEventListener("keydown",handleEscape);
+  document.removeEventListener("keydown", handleEnterIsCreate);
+  document.removeEventListener("keydown", handleEnterIsModify);
+  document.removeEventListener("keydown", handleEscape);
 }
 
 // on submitting the form, add the bookmark to the buffer then update the display and the JSON file
 function addBookmark() {
   {
-    document.removeEventListener("keydown",(event) => {if(event.key == "Enter") addBookmark();});
-    const name = document.getElementById("nameInput").value;
-    const url = document.getElementById("urlInput").value;
-    const id = calculateNewId();
-    const newObject = {
-      "id": id,
-      "name": name,
-      "url": url
+    // ajoute la version actuelle de jsonData à l'historique avant de la modifier
+    writeInHistory();
+    try {
+      document.removeEventListener("keydown", (event) => { if (event.key == "Enter") addBookmark(); });
+      const name = document.getElementById("nameInput").value;
+      const url = document.getElementById("urlInput").value;
+      const id = calculateNewId();
+      const newObject = {
+        "id": id,
+        "name": name,
+        "url": url
+      }
+      jsonData.push(newObject);
+    } catch (e) {
+      // jsonData n'a pas été modifié, on annule son ajout à l'historique des versions
+      versionHist.pop();
     }
-    jsonData.push(newObject);
-    if(DEBUG) {
-      console.log("file modified in buffer :", jsonData);
-    }
-    hideBookmarkForm();
-    hideCommands(); // au cas où les commandes étaient toujours affichées
-    updateDisplay();
-    writeInLocalStorage();
-    writeJsonFile();
   }
+  if (DEBUG) {
+    console.log("element added to buffer :", jsonData);
+  }
+  hideBookmarkForm();
+  hideCommands(); // au cas où les commandes étaient toujours affichées
+  updateDisplay();
+  writeInLocalStorage();
+  writeJsonFile();
 }
 
 // Supprimer un élément du buffer
 function removeBookmark(id) {
   for (let index in jsonData) {
     if (jsonData[index].id == id) {
-      jsonData.splice(index, 1);
-      if(DEBUG) {
-        console.log("Element removed from buffer :", jsonData);
+      // ajoute la version actuelle de jsonData à l'historique avant de la modifier
+      console.log(jsonData);
+      writeInHistory();
+      try {
+        jsonData.splice(index, 1);
+      } catch (e) {
+        // jsonData n'a pas été modifié, on annule son ajout à l'historique des versions
+        versionHist.pop();
+      }
+      if (DEBUG) {
+        console.log("element removed from buffer :", jsonData);
       }
       updateDisplay();
       writeInLocalStorage();
       writeJsonFile();
+      console.log(versionHist.stack[versionHist.stack.length - 1]);
       return 1;
     }
   }
-  if(DEBUG) {
-    console.log("Element absent du fichier JSON");
+  if (DEBUG) {
+    console.log("element missing from json file");
   }
   return 0;
 }
@@ -196,14 +232,21 @@ function modifyBookmark() {
   const id = document.getElementById("bookmarkForm").dataset.targetBookmark;
   const name = document.getElementById("nameInput").value;
   const url = document.getElementById("urlInput").value;
-  jsonData.forEach((element) => {
-    if(element.id == id) {
-      element.name = name;
-      element.url = url;
-    }
-  });
-  if(DEBUG) {
-    console.log("Element modified in buffer :", jsonData);
+  // ajoute la version actuelle de jsonData à l'historique avant de la modifier
+  writeInHistory();
+  try {
+    jsonData.forEach((element) => {
+      if (element.id == id) {
+        element.name = name;
+        element.url = url;
+      }
+    });
+  } catch (e) {
+    // jsonData n'a pas été modifié, on annule son ajout à l'historique des versions
+    versionHist.pop();
+  }
+  if (DEBUG) {
+    console.log("element modified in buffer :", jsonData);
   }
   hideBookmarkForm();
   updateDisplay();
@@ -212,29 +255,45 @@ function modifyBookmark() {
 }
 
 function moveBookmarkLeft(id) {
-  let elementToMove;
-  jsonData.forEach((elem) => {if(elem.id == id) elementToMove=elem});
-  const index = jsonData.indexOf(elementToMove);
-  if (index > 1) { // reminder : the first element is the owner's name
-    jsonData[index] = jsonData[index-1];
-    jsonData[index-1] = elementToMove;
-    updateDisplay();
+  writeInHistory();
+  try {
+    let elementToMove;
+    jsonData.forEach((elem) => { if (elem.id == id) elementToMove = elem });
+    const index = jsonData.indexOf(elementToMove);
+    if (index > 1) { // reminder : the first element is the owner's name
+      jsonData[index] = jsonData[index - 1];
+      jsonData[index - 1] = elementToMove;
+      updateDisplay();
+      writeInLocalStorage();
+      writeJsonFile();
+    }
+  } catch (e) {
+    // si la modification de jsonData a échoué, on retire la version sauvegardée
+    versionHist.pop();
   }
 }
 
 function moveBookmarkRight(id) {
-  let elementToMove;
-  jsonData.forEach((elem) => {if(elem.id == id) elementToMove=elem});
-  const index = jsonData.indexOf(elementToMove);
-  if (index < jsonData.length-1) { 
-    jsonData[index] = jsonData[index+1];
-    jsonData[index+1] = elementToMove;
-    updateDisplay();
+  writeInHistory();
+  try {
+    let elementToMove;
+    jsonData.forEach((elem) => { if (elem.id == id) elementToMove = elem });
+    const index = jsonData.indexOf(elementToMove);
+    if (index < jsonData.length - 1) {
+      jsonData[index] = jsonData[index + 1];
+      jsonData[index + 1] = elementToMove;
+      updateDisplay();
+      writeInLocalStorage();
+      writeJsonFile();
+    }
+  } catch (e) {
+    // si la modification de jsonData a échoué, on retire la version sauvegardée
+    versionHist.pop();
   }
 }
 
 function showCommands() {
-  Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => {elem.style.display = "flex";});
+  Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => { elem.style.display = "flex"; });
   commandsHideState = false;
   document.getElementById("editBookmarksBtn").textContent = "Done";
   document.getElementById("editBookmarksBtn").removeEventListener("click", showCommands);
@@ -242,11 +301,25 @@ function showCommands() {
 }
 
 function hideCommands() {
-  Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => {elem.style.display = "none";});
+  Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => { elem.style.display = "none"; });
   commandsHideState = true;
   document.getElementById("editBookmarksBtn").textContent = "Edit";
   document.getElementById("editBookmarksBtn").removeEventListener("click", hideCommands);
   document.getElementById("editBookmarksBtn").addEventListener("click", showCommands);
+}
+
+function restoreLastVersion() {
+  let previousVersion = versionHist.pop();
+  if (previousVersion !== undefined) {
+    console.log("json file version to be restored : ", previousVersion);
+    jsonData = previousVersion;
+    sessionStorage.setItem("versionHist", versionHist);
+    updateDisplay();
+    writeInLocalStorage();
+    writeJsonFile();
+  } else {
+    console.log("no version to restore")
+  }
 }
 
 // Retourne un id correspondant au premier entier non utilisé
@@ -278,15 +351,15 @@ function updateDisplay() {
 
   if (commandsHideState) {
     // cacher les commandes des marques pages
-    Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => {elem.style.display = "none";});
+    Array.prototype.slice.call(document.getElementsByClassName("bookmarkActionsContainer")).forEach((elem) => { elem.style.display = "none"; });
   }
 
   // ajouter les événements aux éléments raffraîchis
   document.getElementById('addNewBookmarkButton').addEventListener('click', showNewBookmarkForm);
-  Array.prototype.slice.call(document.getElementsByClassName('removeCardBtn')).forEach((btn) => {btn.addEventListener('click', (event) => { removeBookmark(event.target.dataset.bookmarkId) })});
-  Array.prototype.slice.call(document.getElementsByClassName('modifyCardBtn')).forEach((btn) => {btn.addEventListener('click', (event) => { showModificationForm(event.target) })});
-  Array.prototype.slice.call(document.getElementsByClassName('moveCardLeftBtn')).forEach((btn) => {btn.addEventListener('click', (event) => { moveBookmarkLeft(event.target.dataset.bookmarkId) })});
-  Array.prototype.slice.call(document.getElementsByClassName('moveCardRightBtn')).forEach((btn) => {btn.addEventListener('click', (event) => { moveBookmarkRight(event.target.dataset.bookmarkId) })});
+  Array.prototype.slice.call(document.getElementsByClassName('removeCardBtn')).forEach((btn) => { btn.addEventListener('click', (event) => { removeBookmark(event.target.dataset.bookmarkId) }) });
+  Array.prototype.slice.call(document.getElementsByClassName('modifyCardBtn')).forEach((btn) => { btn.addEventListener('click', (event) => { showModificationForm(event.target) }) });
+  Array.prototype.slice.call(document.getElementsByClassName('moveCardLeftBtn')).forEach((btn) => { btn.addEventListener('click', (event) => { moveBookmarkLeft(event.target.dataset.bookmarkId) }) });
+  Array.prototype.slice.call(document.getElementsByClassName('moveCardRightBtn')).forEach((btn) => { btn.addEventListener('click', (event) => { moveBookmarkRight(event.target.dataset.bookmarkId) }) });
 }
 
 // generates HTML content to create a card with the data of a bookmark
@@ -305,7 +378,7 @@ function createCard(element) {
               </div>
             </div>`
   } catch (e) {
-    console.err.log("Error creating card : ", e);
+    console.err.log(`error creating HTML card with ${element} : `, e);
     return "";
   }
 }
@@ -324,28 +397,33 @@ const handleEscape = (event) => {
 
 // fonction appelée une seule fois au chargement de la page
 function init() {
+  // récupérer les données de jsonDataHist dans le session storage :
+  versionHist = sessionStorage.getItem("jsonDataHist");
+  if (versionHist === null) versionHist = new CircularFixedStack(5);
+
   // Vérifier si l'utilisateur est déjà authentifié
   checkAuthentication();
 
   // Ajout des événements
   document.getElementById("editBookmarksBtn").addEventListener("click", showCommands);
+  document.getElementById("cancelChangesBtn").addEventListener("click", restoreLastVersion);
   document.getElementById("closeBookmarkFormBtn").addEventListener("click", hideBookmarkForm);
 
   // Permettre de sélectionner tout le contenu des input au click
   // credit : chatgpt gg à lui
   let focusedElement;
   document.addEventListener('focus', function (event) {
-      const target = event.target;
-      if (target.tagName === 'INPUT') {
-          if (focusedElement === target) return;
-          focusedElement = target;
-          setTimeout(function () {
-              focusedElement.select();
-          }, 100);
-      }
+    const target = event.target;
+    if (target.tagName === 'INPUT') {
+      if (focusedElement === target) return;
+      focusedElement = target;
+      setTimeout(function () {
+        focusedElement.select();
+      }, 100);
+    }
   }, true);
-  document.getElementById("closeBookmarkFormBtn").addEventListener("click", () => {focusedElement = undefined});
-  document.getElementById("submitBookmarkForm").addEventListener("click", () => {focusedElement = undefined});
+  document.getElementById("closeBookmarkFormBtn").addEventListener("click", () => { focusedElement = undefined });
+  document.getElementById("submitBookmarkForm").addEventListener("click", () => { focusedElement = undefined });
   document.addEventListener("keydown", (event) => {
     if (event.key == "Escape") focusedElement = undefined;
     if (event.key == "Enter") focusedElement = undefined;
