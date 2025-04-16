@@ -298,6 +298,7 @@ function showCommands() {
   document.getElementById("editBookmarksBtn").textContent = "Done";
   document.getElementById("editBookmarksBtn").removeEventListener("click", showCommands);
   document.getElementById("editBookmarksBtn").addEventListener("click", hideCommands);
+  document.getElementById("cancelChangesBtn").style.display = "";
 }
 
 function hideCommands() {
@@ -306,6 +307,7 @@ function hideCommands() {
   document.getElementById("editBookmarksBtn").textContent = "Edit";
   document.getElementById("editBookmarksBtn").removeEventListener("click", hideCommands);
   document.getElementById("editBookmarksBtn").addEventListener("click", showCommands);
+  document.getElementById("cancelChangesBtn").style.display = "none";
 }
 
 function restoreLastVersion() {
