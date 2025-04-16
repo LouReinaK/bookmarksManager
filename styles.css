@@ -24,32 +24,21 @@ h1 {
     text-align: center;
 }
 
-#editBookmarksBtn {
+.textButton {
     border: 1px solid rgb(255, 255, 255, 0.5);
     border-radius: 10%;
     background-color: rgb(255,255,255,0.1);
-    box-shadow: 0 0 5px rgb(255,255,0);
+    box-shadow: 0 0 5px rgb(0,255,255);
     color: white;
-    margin: 0 0 10px 25px;
     transition-duration: 0.2s;
 }
 
-#editBookmarksBtn:hover {
-    box-shadow: 0 0 15px rgb(255,255,0);
+.textButton:hover {
+    box-shadow: 0 0 15px rgb(0,255,255);
 }
 
-#cancelChangesBtn {
-    border: 1px solid rgb(255, 255, 255, 0.5);
-    border-radius: 10%;
-    background-color: rgb(255,255,255,0.1);
-    box-shadow: 0 0 5px rgb(255,0,100,1);
-    color: white;
-    margin: 0 0 5px 25px;
-    transition-duration: 0.2s;
-}
-
-#cancelChangesBtn:hover {
-    box-shadow: 0 0 15px rgb(255,0,100,1);
+body > button {
+    margin: 0 5px 20px 20px;
 }
 
 .cardsContainer {
@@ -169,17 +158,4 @@ h1 {
 .newBookmarkContent > input:focus {
     outline:none;
     box-shadow: 0 0 10px rgb(0,255,255);
-}
-
-.newBookmarkContent > button {
-    border: 1px solid rgb(255, 255, 255, 0.5);
-    border-radius: 10%;
-    background-color: rgb(255,255,255,0.1);
-    box-shadow: 0 0 5px rgb(0,255,255);
-    color: white;
-    transition-duration: 0.2s;
-}
-
-.newBookmarkContent > button:hover {
-    box-shadow: 0 0 15px rgb(0,255,255);
 }
